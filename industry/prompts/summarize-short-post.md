@@ -18,3 +18,5 @@ body_zh: <中文翻译>
 {{identity}}
 主推文内容：
 {{post}}
+
+{{> rules-mathtech}}

@@ -1,0 +1,77 @@
+{
+  "verifiedAt": "2026-10-02",
+  "scope": "Public read-only repository and feed verification; not a live collector smoke",
+  "sources": [
+    {
+      "repository": "datalab-to/marker",
+      "feedUrl": "https://github.com/datalab-to/marker/releases.atom",
+      "status": 200,
+      "finalUrl": "https://github.com/datalab-to/marker/releases.atom",
+      "atom": true,
+      "entries": 10,
+      "firstTitle": "Marker 2.0.0"
+    },
+    {
+      "repository": "datalab-to/surya",
+      "feedUrl": "https://github.com/datalab-to/surya/releases.atom",
+      "status": 200,
+      "finalUrl": "https://github.com/datalab-to/surya/releases.atom",
+      "atom": true,
+      "entries": 10,
+      "firstTitle": "Layout Fixes"
+    },
+    {
+      "repository": "quarto-dev/quarto-cli",
+      "feedUrl": "https://github.com/quarto-dev/quarto-cli/releases.atom",
+      "status": 200,
+      "finalUrl": "https://github.com/quarto-dev/quarto-cli/releases.atom",
+      "atom": true,
+      "entries": 10,
+      "firstTitle": "v1.11.5"
+    },
+    {
+      "repository": "jgm/pandoc",
+      "feedUrl": "https://github.com/jgm/pandoc/releases.atom",
+      "status": 200,
+      "finalUrl": "https://github.com/jgm/pandoc/releases.atom",
+      "atom": true,
+      "entries": 10,
+      "firstTitle": "pandoc 3.12"
+    },
+    {
+      "repository": "vectorgraphics/asymptote",
+      "feedUrl": "https://github.com/vectorgraphics/asymptote/releases.atom",
+      "status": 200,
+      "finalUrl": "https://github.com/vectorgraphics/asymptote/releases.atom",
+      "atom": true,
+      "entries": 10,
+      "firstTitle": "3.16git"
+    },
+    {
+      "repository": "veraPDF/veraPDF-library",
+      "feedUrl": "https://github.com/veraPDF/veraPDF-library/releases.atom",
+      "status": 200,
+      "finalUrl": "https://github.com/veraPDF/veraPDF-library/releases.atom",
+      "atom": true,
+      "entries": 10,
+      "firstTitle": "v1.31.43"
+    }
+  ],
+  "authorityReferences": {
+    "datalab-to/marker": "https://pypi.org/project/marker-pdf/ (Repository link)",
+    "datalab-to/surya": "https://pypi.org/project/surya-ocr/ (Repository link)",
+    "quarto-dev/quarto-cli": "https://quarto.org/docs/download/index.html",
+    "jgm/pandoc": "https://pandoc.org/releases.html",
+    "vectorgraphics/asymptote": "https://asymptote.sourceforge.io/doc/Help.html",
+    "veraPDF/veraPDF-library": "https://verapdf.org/news/ (release notes link)"
+  },
+  "deferred": [
+    {
+      "project": "TeX Live",
+      "official": "https://tug.org/texlive/",
+      "sourceRepositoryAuthority": "https://www.tug.org/texlive/doc/tlbuild.html",
+      "state": "NOT_SEEDED",
+      "reason": "official page fetch 403; no verified collector endpoint or date mapping"
+    }
+  ]
+}

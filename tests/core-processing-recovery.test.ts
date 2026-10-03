@@ -25,8 +25,8 @@ const provider = await stub(async (_hit, request) => {
     return new Reply(400, { error: "old revision refused" });
   }
   const system = String(body.messages[0]?.content ?? "");
-  const step = system.includes("宽召回的AI相关性预筛") ? "prefilter"
-    : system.includes("事件注意力评分器") ? "score"
+  const step = system.includes("数学数字化与数学文档生产相关性预筛") ? "prefilter"
+    : system.includes("数学文档生产技术情报评分器") ? "score"
     : system.includes("资料结构化助手") ? "structure" : "understand";
   calls.push(step);
   if (step === "score" && refuseScore) {
@@ -35,8 +35,8 @@ const provider = await stub(async (_hit, request) => {
   }
   const content = step === "prefilter" ? { label: original ? "BLOCK" : "PASS", reason: "local fixture" }
     : step === "score" ? { attentionScore: 80 }
-    : step === "structure" ? { category: "ai-models", tags: [], subjects: [], fact: null }
-    : { itemType: "model_release", authorRole: "principal", tags: ["模型发布"], editorialJudgment: "模型能力提升", titleZh: `新判断 ${T}`, summaryZh: "模型发布并提供评测和价格。" };
+    : step === "structure" ? { category: "OCR", tags: [], subjects: [], fact: null }
+    : { itemType: "model_release", authorRole: "principal", tags: ["OCR"], editorialJudgment: "模型能力提升", titleZh: `新判断 ${T}`, summaryZh: "OCR并提供评测和价格。" };
   return { choices: [{ message: { content: JSON.stringify(content) } }] };
 });
 for (const name of ["DASHSCOPE_BASE_URL", "ZHIPU_BASE_URL", "DEEPSEEK_BASE_URL"]) process.env[name] = `${provider.url}/v1`;

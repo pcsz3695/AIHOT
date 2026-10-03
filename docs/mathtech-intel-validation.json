@@ -1,0 +1,41 @@
+{
+  "architecture": {
+    "pass": 5,
+    "fail": 0,
+    "checkpoint": "before changes; core unchanged"
+  },
+  "mathtech": {
+    "pass": 10,
+    "fail": 0,
+    "checkpoint": "final code guard and fixtures"
+  },
+  "web": {
+    "pass": 31,
+    "fail": 0,
+    "checkpoint": "SSR fixtures; brand asset-only update carried forward; final build executed"
+  },
+  "typecheck": "PASS",
+  "webBuild": "PASS",
+  "paidApiCalls": 0,
+  "unexecuted": [
+    "npm test (requires throwaway PostgreSQL)",
+    "SelectBench runtime/import (requires PostgreSQL)",
+    "docker compose config (docker unavailable)",
+    "database migration/seed",
+    "scripts/smoke.ts against real api/db",
+    "MCP smoke against real api/db",
+    "live LLM semantic calibration"
+  ],
+  "knownUpstreamFailures": [],
+  "coreFilesChanged": [],
+  "logs": {
+    "baseline-typecheck.log": "d488ff2aec0513f3a3217da86bd94f686605b2eb5c556ac505d73da227dffdcd",
+    "baseline-architecture.log": "b3728db2922be0b02c1daf2b705a8196db99911794acfed7175121e16240cd01",
+    "touched-typecheck.log": "d488ff2aec0513f3a3217da86bd94f686605b2eb5c556ac505d73da227dffdcd",
+    "final-typecheck.log": "d488ff2aec0513f3a3217da86bd94f686605b2eb5c556ac505d73da227dffdcd",
+    "final-web-build.log": "960b8f0a28ce64cd35f096f16b2bc6a018cd54a65df67c4952596547a04b3b98",
+    "final-mathtech-tests.log": "21ac26ffb5be47b3b67744b38793134671837287af416f99898ac385bba046e9",
+    "final-prompts.log": "9f731d590d69a63cc1d7123b30a1843f3e6d80851b0bc46c124ca3f4ddc00f2a",
+    "web-tests.log": "5a5b9c63e1c596137c8caa8fda41f3058df204783bef328b0801578ba0f585e6"
+  }
+}
