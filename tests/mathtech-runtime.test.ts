@@ -6,12 +6,6 @@ import { randomUUID } from "node:crypto";
 import { readdirSync } from "node:fs";
 import { after, test } from "node:test";
 import Fastify from "fastify";
-import { closeDb, sql } from "@aihot/backend/db";
-import { upsertMaterial } from "@aihot/backend/content/materials";
-import { processArticle } from "@aihot/backend/jobs/content";
-import { stopBoss } from "@aihot/backend/jobs/queue";
-import { registerIngest } from "../apps/api/src/routes/ingest.ts";
-import { registerV1 } from "../apps/api/src/routes/v1.ts";
 
 const calls: string[] = [];
 const provider = await stub((_hit, request) => {
@@ -38,7 +32,7 @@ process.env.LLM_MODEL = "mathtech-loopback-mock";
 process.env.LLM_API_KEY = randomUUID(); // transient stub value, not an external credential
 process.env.INGEST_TOKEN = randomUUID();
 process.env.COLLECT_ENABLED = "false";
-process.env.MODEL_CALLS_ENABLED = "false"; // no workers; production functions invoked explicitly with a local stub
+process.env.MODEL_CALLS_ENABLED = "true"; // this test process calls only the guarded loopback mock
 process.env.JINA_BODY_FALLBACK = "false";
 process.env.FEISHU_INTERNAL_ENABLED = "false";
 process.env.FEISHU_LOGIN_ENABLED = "false";
@@ -51,6 +45,14 @@ globalThis.fetch = ((input, init) => {
   assert.equal(url.origin, provider.url, "external HTTP is forbidden during this smoke");
   return originalFetch(input, init);
 }) as typeof fetch;
+
+// Load config only after the mock environment and fail-closed HTTP guard are ready.
+const { closeDb, sql } = await import("@aihot/backend/db");
+const { upsertMaterial } = await import("@aihot/backend/content/materials");
+const { processArticle } = await import("@aihot/backend/jobs/content");
+const { stopBoss } = await import("@aihot/backend/jobs/queue");
+const { registerIngest } = await import("../apps/api/src/routes/ingest.ts");
+const { registerV1 } = await import("../apps/api/src/routes/v1.ts");
 
 const app = Fastify();
 registerIngest(app);
