@@ -60,3 +60,10 @@ test("four-way metric arithmetic includes FP/FN and no-denominator values are un
   assert.deepEqual([m.falsePositives, m.falseNegatives, m.precision, m.recall], [1, 1, 0, 0]);
   assert.equal(mathtechMetrics([]).precision, null);
 });
+test("missing safety gold is unavailable, while wrong dates and versions count as errors", () => {
+  const row = rows[5], { envelope, review } = reviewedFixture(row);
+  const output = researchDecision(goldIdentity(row), envelope, review, { selected: true, relevance: "pass" }, true);
+  const labelled = { ...row, mathtech: { expected: { ...row.mathtech.expected, version: "different", releaseDate: "2025-01-01T00:00:00Z" } } };
+  assert.equal(mathtechMetrics([{ row: labelled, output, error: null }]).dateVersionMistakes, 1);
+  assert.throws(() => validateMathtechGold(rows, {}, false), /independent date\/version/);
+});

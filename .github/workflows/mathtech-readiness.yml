@@ -60,7 +60,7 @@ jobs:
           import { appendFileSync } from 'node:fs';
           const files = execFileSync('git', ['diff', '--name-only', 'HEAD^', 'HEAD'], { encoding: 'utf8' });
           const all = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch';
-          const evidence = /mathtech-(evidence|policy|fixture-helper)|mathtech\.gold/.test(files);
+          const evidence = /mathtech-(evidence|policy|fixture-helper|calibration\.ts)|mathtech\.gold/.test(files);
           const budget = /mathtech-budget/.test(files);
           const readiness = /mathtech-readiness\.ts|mathtech-readiness\.test/.test(files);
           const runtime = evidence || budget || /mathtech-calibration|eval-selection|export-mathtech-decision/.test(files);

@@ -12,6 +12,14 @@ export function validateMathtechGold(rows: any[], review: any, regression: boole
       || !(g.invalidatedBoundary === null || typeof g.invalidatedBoundary === "string")) throw new Error("MathTech gold requires independent four-way and safety labels");
   }
   if (regression) return { kind: "SYNTHETIC_REGRESSION", calibrationRuntime: "NOT_CALIBRATION", datasetHash: digest(canonical(rows)) };
+  // A missing safety label is not a zero-error measurement. Real gold must label
+  // these fields independently; the six historical synthetic rows stay unchanged.
+  for (const r of rows) {
+    const g = r.mathtech.expected;
+    if (!["version", "publicationDate", "releaseDate"].every(k => g[k] === null || typeof g[k] === "string" && g[k].length > 0)
+      || !["stable", "pre-release", "beta", "RC", "nightly", "experimental", "unknown"].includes(g.releaseChannel)
+      || ![g.supportedClaims, g.unsupportedClaims].every(v => Array.isArray(v) && v.every(x => typeof x === "string"))) throw new Error("EXTERNAL_BLOCKED: independent date/version/channel and claim-scope gold labels are required");
+  }
   const a = review?.goldApproval;
   if (!a || a.method !== "human-labelled-public-corpus" || !a.reviewer?.trim() || !Number.isFinite(Date.parse(a.reviewedAt))
     || a.datasetHash !== digest(canonical(rows)) || rows.some(r => /synthetic|made.up/i.test(canonical(r.material)))) throw new Error("EXTERNAL_BLOCKED: exact public corpus needs independent human labels and approval; synthetic fixtures are regression only");
@@ -27,7 +35,7 @@ export function mathtechMetrics(cases: Array<{ row: any; output: ReturnType<type
     if (error) continue;
     const g = row.mathtech.expected;
     confusion[g.decision as Decision][o.decision]++;
-    if (o.newRelease !== g.newRelease || g.version !== undefined && o.version !== g.version) dateVersionMistakes++;
+    if (o.newRelease !== g.newRelease || ["version", "publicationDate", "releaseDate"].some(k => g[k] !== undefined && o[k as keyof typeof o] !== g[k])) dateVersionMistakes++;
     if (o.releaseChannel !== g.releaseChannel) prereleaseMistakes++;
     if (o.decision === "EXPERIMENT" && (!o.evidenceVerified || o.unsupportedClaims.length || g.decision === "NEEDS_EVIDENCE")) evidenceGateViolations++;
     if (g.unsupportedClaims?.some((id: string) => o.supportedClaims.includes(id))) scopeOverclaim++;
