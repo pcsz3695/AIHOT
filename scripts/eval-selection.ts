@@ -25,6 +25,8 @@ import { modelFor } from "@aihot/backend/editorial/models";
 import { importSelectBenchRun } from "@aihot/backend/admin/selectbench";
 import { mathtechCase, mathtechMetrics, validateMathtechGold } from "../industry/mathtech-calibration.ts";
 import { installMathtechTransport } from "./mathtech-budget.ts";
+import { canonical, digest, EVIDENCE_POLICY } from "../industry/mathtech-evidence.ts";
+import { SELECTION } from "../industry/selection.ts";
 
 const { values } = parseArgs({
   options: {
@@ -249,7 +251,10 @@ for (const model of models) {
   if (mathtech) {
     const evaluated = results.map(x => ({ row: x.r, output: mathtechCase(x.r, x.out, mtBundle, mtReview, values["mathtech-regression"]!), error: x.error }));
     const metrics = mathtechMetrics(evaluated);
-    report[model] = { summary: { ...summary, mathtech: { ...mtDataset, ...metrics, newHttpRequests: mtTransport!.requests(), acceptance: "NOT_APPROVED" } }, sweep, mistakes,
+    report[model] = { summary: { ...summary, mathtech: { ...mtDataset, ...metrics, split: values.split,
+      policyVersion: EVIDENCE_POLICY, promptVersion: SELECTION_PROMPT_VERSION, selectionHash: digest(canonical(SELECTION)),
+      datasetSize: rows.length, sampleCaseIds: sample.map(r => r.caseId),
+      newHttpRequests: mtTransport!.requests(), acceptance: "NOT_APPROVED" } }, sweep, mistakes,
       cases: cases.map((c, i) => ({ ...c, selectionGold: c.gold, selectionDecision: c.decision,
         gold: (results[i]!.r as any).mathtech.expected.decision, decision: evaluated[i]!.output.decision,
         reason: evaluated[i]!.output.reason, evidence: evaluated[i]!.output })) };

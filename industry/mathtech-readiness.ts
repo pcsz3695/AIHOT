@@ -9,7 +9,8 @@ export function shadowReadiness(input: any) {
   if (input.budget?.maxHttpRequests !== 24 || input.budget?.maxOutputTokens !== 2048 || input.budget?.perDay !== 24) blockers.push("bounded request/receipt budget missing");
   const c = input.calibration, a = input.acceptance;
   if (!c || c.kind !== "HUMAN_LABELLED_PUBLIC_CORPUS" || c.split !== "holdout" || c.errors !== 0 || c.policyVersion !== EVIDENCE_POLICY
-    || !input.currentPromptVersion || c.promptVersion !== input.currentPromptVersion || !input.currentSelectionHash || c.selectionHash !== input.currentSelectionHash) blockers.push("independent human-labelled holdout calibration unavailable or stale");
+    || !input.currentPromptVersion || c.promptVersion !== input.currentPromptVersion || !input.currentSelectionHash || c.selectionHash !== input.currentSelectionHash
+    || !Number.isInteger(c.datasetSize) || c.datasetSize < 100 || !Number.isInteger(c.n) || c.n < 1) blockers.push("independent human-labelled holdout calibration unavailable or stale");
   else if (!a || a.method !== "human-calibration-acceptance" || !a.reviewer || !Number.isFinite(Date.parse(a.reviewedAt)) || a.reportHash !== digest(canonical(c))) blockers.push("quantitative calibration acceptance is not approved");
   else {
     for (const d of DECISIONS) {

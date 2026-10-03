@@ -4,6 +4,8 @@ on:
     branches: [prototype/mathtech-intel-v0]
     paths:
       - industry/mathtech-evidence.ts
+      - industry/mathtech-policy.ts
+      - industry/mathtech.gold.jsonl
       - industry/mathtech-calibration.ts
       - industry/mathtech-readiness.ts
       - scripts/eval-selection.ts
@@ -43,18 +45,47 @@ jobs:
       INDEXNOW_SUBMIT_ENABLED: "false"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 24
           package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Select invalidated checks
+        id: scope
+        run: |
+          node --input-type=module <<'JS'
+          import { execFileSync } from 'node:child_process';
+          import { appendFileSync } from 'node:fs';
+          const files = execFileSync('git', ['diff', '--name-only', 'HEAD^', 'HEAD'], { encoding: 'utf8' });
+          const all = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch';
+          const evidence = /mathtech-(evidence|policy|fixture-helper)|mathtech\.gold/.test(files);
+          const budget = /mathtech-budget/.test(files);
+          const readiness = /mathtech-readiness\.ts|mathtech-readiness\.test/.test(files);
+          const runtime = evidence || budget || /mathtech-calibration|eval-selection|export-mathtech-decision/.test(files);
+          const evaluator = /eval-selection|mathtech-calibration/.test(files);
+          for (const [key, value] of Object.entries({ evidence, budget, readiness, runtime, evaluator, db: runtime || evaluator })) appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${all || value}\n`);
+          JS
       - name: Evidence, budget and readiness boundaries
-        run: node --test tests/mathtech-evidence.test.ts tests/mathtech-budget.test.ts tests/mathtech-readiness.test.ts
+        env:
+          EVIDENCE: ${{ steps.scope.outputs.evidence }}
+          BUDGET: ${{ steps.scope.outputs.budget }}
+          READINESS: ${{ steps.scope.outputs.readiness }}
+        run: |
+          tests=()
+          if [ "$EVIDENCE" = true ]; then tests+=(tests/mathtech-evidence.test.ts); fi
+          if [ "$BUDGET" = true ]; then tests+=(tests/mathtech-budget.test.ts); fi
+          if [ "$READINESS" = true ]; then tests+=(tests/mathtech-readiness.test.ts); fi
+          if [ ${#tests[@]} -gt 0 ]; then node --test "${tests[@]}"; fi
       - name: Typecheck changed scripts and adapter tests only
         run: node node_modules/typescript/bin/tsc -p tests/mathtech.tsconfig.json
       - name: Fresh SelectBench test database setup (not B1 revalidation)
+        if: steps.scope.outputs.db == 'true'
         run: node scripts/migrate.ts
       - name: New SelectBench projection and receipt reuse
+        if: steps.scope.outputs.runtime == 'true'
         run: node --test --test-concurrency=1 tests/mathtech-calibration-runtime.test.ts
       - name: Existing evaluator regression (invalidated by optional mode changes)
+        if: steps.scope.outputs.evaluator == 'true'
         run: node --test --test-concurrency=1 tests/selection-eval-runtime.test.ts

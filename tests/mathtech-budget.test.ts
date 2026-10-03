@@ -24,3 +24,9 @@ test("successful sends stop at the per-invocation ceiling", async () => {
     assert.equal(guard.requests(), 1);
   } finally { guard.restore(); globalThis.fetch = original; }
 });
+test("oversized requests and alternate output-token fields cannot bypass the cap", async () => {
+  for (const body of [JSON.stringify({ max_tokens: 4096 }), JSON.stringify({ max_tokens: 512, max_completion_tokens: 4096 }), "x".repeat(100_001)]) {
+    const guard = installMathtechTransport("http://127.0.0.1:1234/v1", true);
+    try { await assert.rejects(fetch("http://127.0.0.1:1234/v1/chat/completions", { body }), /cap/); assert.equal(guard.requests(), 0); } finally { guard.restore(); }
+  }
+});

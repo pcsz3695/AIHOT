@@ -41,6 +41,10 @@ test("existing SelectBench evaluator runs gated four-way regression, imports it 
     const cold = await run();
     assert.equal(cold.model.summary.mathtech.calibrationRuntime, "NOT_CALIBRATION");
     assert.equal(cold.model.summary.mathtech.acceptance, "NOT_APPROVED");
+    assert.equal(cold.model.summary.mathtech.policyVersion, EVIDENCE_POLICY);
+    assert.match(cold.model.summary.mathtech.selectionHash, /^[a-f0-9]{64}$/);
+    assert.ok(cold.model.summary.mathtech.promptVersion);
+    assert.equal(cold.model.summary.mathtech.datasetSize, 6);
     assert.deepEqual(cold.model.cases.map((c: any) => [c.caseId, c.decision]).sort(), rows.map(r => [r.caseId, r.mathtech.expected.decision]).sort());
     assert.equal(cold.model.summary.mathtech.evidenceGateViolations, 0);
     assert.equal(cold.model.summary.mathtech.newHttpRequests, 18);
