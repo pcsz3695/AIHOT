@@ -1,0 +1,47 @@
+{
+  "startHead": "9670f25273ae1441458dad3f70908a816c1252f3",
+  "status": "HUMAN_REVIEW_REQUIRED",
+  "corpusRows": 40,
+  "restoredHumanLabels": 4,
+  "unlabelled": 36,
+  "classSupport": {
+    "EXPERIMENT": 2,
+    "OBSERVE": 2,
+    "IGNORE": 0,
+    "NEEDS_EVIDENCE": 0
+  },
+  "minimumSupport": {
+    "EXPERIMENT": 8,
+    "OBSERVE": 8,
+    "IGNORE": 8,
+    "NEEDS_EVIDENCE": 6
+  },
+  "thresholds": {
+    "experimentPrecision": 0.9,
+    "experimentRecall": 0.7,
+    "needsEvidenceRecall": 0.8,
+    "macroF1": 0.75,
+    "hardEvidenceViolations": 0
+  },
+  "budget": {
+    "firstPassNecessaryMaximum": 120,
+    "retryAllowance": 24,
+    "firstPassMaxCalls": 144,
+    "campaignAbsoluteCap": 250,
+    "maxIterations": 3,
+    "actualCalls": 0,
+    "successfulReceiptReuse": true
+  },
+  "calibrationExecuted": false,
+  "shadowRunReady": false,
+  "frozenGates": {
+    "B1": "PASS",
+    "B2": "PASS",
+    "effectiveTests": 25,
+    "syntheticFixtures": 6
+  },
+  "privateDataUsed": false,
+  "coreModified": false,
+  "dbSchemaChanged": false,
+  "migrationAdded": false
+}
