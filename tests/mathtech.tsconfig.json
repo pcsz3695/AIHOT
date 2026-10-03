@@ -1,0 +1,4 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": ["mathtech-evidence.test.ts", "mathtech-budget.test.ts", "mathtech-readiness.test.ts", "mathtech-calibration-runtime.test.ts", "../scripts/eval-selection.ts", "../scripts/mathtech-*.ts", "../scripts/export-mathtech-decision.ts"]
+}

@@ -23,6 +23,8 @@ import {
 } from "@aihot/backend/editorial/analyze";
 import { modelFor } from "@aihot/backend/editorial/models";
 import { importSelectBenchRun } from "@aihot/backend/admin/selectbench";
+import { mathtechCase, mathtechMetrics, validateMathtechGold } from "../industry/mathtech-calibration.ts";
+import { installMathtechTransport } from "./mathtech-budget.ts";
 
 const { values } = parseArgs({
   options: {
@@ -34,6 +36,9 @@ const { values } = parseArgs({
     seed: { type: "string", default: "7" },
     label: { type: "string" },
     "no-import": { type: "boolean", default: false },
+    "mathtech-evidence": { type: "string" },
+    "mathtech-review": { type: "string" },
+    "mathtech-regression": { type: "boolean", default: false },
   },
 });
 
@@ -58,6 +63,31 @@ const rand = rng(Number(values.seed));
 const pool = values.split === "all" ? rows : rows.filter((r) => r.samplingContext?.benchmarkSplit === values.split);
 const shuffled = pool.map((r) => ({ r, k: rand() })).sort((a, b) => a.k - b.k).map((x) => x.r);
 const sample = shuffled.slice(0, Number(values.n));
+
+// MathTech reuses this evaluator and its receipts/SelectBench storage. The optional
+// adapter only projects selection into the four research decisions after evidence checks.
+const mathtech = !!values["mathtech-evidence"];
+let mtBundle: any, mtReview: any, mtDataset: ReturnType<typeof validateMathtechGold> | undefined;
+let mtTransport: ReturnType<typeof installMathtechTransport> | undefined;
+let mtStopped = false;
+if (values["mathtech-regression"] && !mathtech) throw new Error("Regression flag requires --mathtech-evidence");
+if (mathtech) {
+  if (!values["mathtech-review"]) throw new Error("MathTech requires --mathtech-review from the operator");
+  mtBundle = JSON.parse(readFileSync(values["mathtech-evidence"]!, "utf8"));
+  mtReview = JSON.parse(readFileSync(values["mathtech-review"]!, "utf8"));
+  mtDataset = validateMathtechGold(rows, mtReview, values["mathtech-regression"]!);
+  if (!sample.length || sample.length > 8 || Number(values.concurrency) !== 1 || values.models !== "default") throw new Error("MathTech is bounded to --models default --concurrency 1 --n 1..8");
+  if (!/_(ci|test|shadow)$/.test(new URL(process.env.DATABASE_URL ?? "postgres://invalid/invalid").pathname)) throw new Error("MathTech requires an isolated *_ci, *_test or *_shadow database");
+  if (process.env.MODEL_CALLS_ENABLED !== "true" || !process.env.LLM_BASE_URL || !process.env.LLM_API_KEY || !process.env.LLM_MODEL) throw new Error("EXTERNAL_BLOCKED: configure one OpenAI-compatible LLM_BASE_URL / LLM_MODEL / LLM_API_KEY");
+  if (await modelFor("prefilter") !== "default" || await modelFor("score") !== "default") throw new Error("MathTech requires existing prefilter/score routes to be default");
+  const [unsettled] = await sql`SELECT count(*)::int AS n FROM receipts WHERE service = 'llm' AND status IN ('pending','unknown','failed')`;
+  if (unsettled!.n) throw new Error("MathTech requires operator reconciliation of pending/unknown/failed receipts; no automatic retry");
+  // Existing receipt code enforces this cumulative ceiling under its advisory lock.
+  // Never raise an already stricter budget, and never leave a missing row unlimited.
+  await sql`INSERT INTO budgets (service, per_minute, per_hour, per_day) VALUES ('llm', 24, 24, 24)
+    ON CONFLICT (service) DO UPDATE SET per_minute = least(budgets.per_minute,24), per_hour = least(budgets.per_hour,24), per_day = least(budgets.per_day,24)`;
+  mtTransport = installMathtechTransport(process.env.LLM_BASE_URL, values["mathtech-regression"]!, 24);
+}
 
 function toInput(r: GoldRow): AnalyzeInputArticle {
   const m = r.material;
@@ -126,6 +156,7 @@ for (const model of models) {
   const results = await pmap(sample, Number(values.concurrency), async (r) => {
     const input = toInput(r);
     const receiptIds: number[] = [];
+    if (mtStopped) return { r, out: null, receiptIds, error: "MathTech stopped after first error; successful receipts retained" };
     try {
       const prefilter = await runSelectionPrefilter(input, {}, (id) => receiptIds.push(id));
       if (prefilter.label === "BLOCK") {
@@ -151,13 +182,14 @@ for (const model of models) {
       }
       const shared = await request;
       receiptIds.push(...shared.receiptIds);
-      if (shared.error) return { r, out: null, receiptIds, error: shared.error };
+      if (shared.error) { if (mathtech) { mtStopped = true; mtTransport!.stop(); } return { r, out: null, receiptIds, error: shared.error }; }
 
       // Model output is independent of source tier; the decision threshold is not.
       const scores = shared.scores ? { ...shared.scores, threshold } : null;
       const run: AnalysisRun = { prefilter, scores, writing: null, structure: null };
       return { r, out: normalizeAnalysis(run), receiptIds, error: null as string | null };
     } catch (error) {
+      if (mathtech) { mtStopped = true; mtTransport!.stop(); }
       return { r, out: null, receiptIds, error: String(error).slice(0, 200) };
     }
   });
@@ -214,7 +246,14 @@ for (const model of models) {
     receiptId: x.receiptIds[0] ?? null,
     error: x.error,
   }));
-  report[model] = { summary, sweep, mistakes, cases };
+  if (mathtech) {
+    const evaluated = results.map(x => ({ row: x.r, output: mathtechCase(x.r, x.out, mtBundle, mtReview, values["mathtech-regression"]!), error: x.error }));
+    const metrics = mathtechMetrics(evaluated);
+    report[model] = { summary: { ...summary, mathtech: { ...mtDataset, ...metrics, newHttpRequests: mtTransport!.requests(), acceptance: "NOT_APPROVED" } }, sweep, mistakes,
+      cases: cases.map((c, i) => ({ ...c, selectionGold: c.gold, selectionDecision: c.decision,
+        gold: (results[i]!.r as any).mathtech.expected.decision, decision: evaluated[i]!.output.decision,
+        reason: evaluated[i]!.output.reason, evidence: evaluated[i]!.output })) };
+  } else report[model] = { summary, sweep, mistakes, cases };
 }
 const outDir = path.join(REPO_ROOT, ".data/eval");
 mkdirSync(outDir, { recursive: true });
@@ -228,3 +267,5 @@ if (!values["no-import"]) {
   console.log(`SelectBench run: ${run.id}`);
 }
 await closeDb();
+mtTransport?.restore();
+if (mathtech && mtStopped) process.exitCode = 1;
