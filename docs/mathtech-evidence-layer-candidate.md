@@ -1,3 +1,9 @@
+# Current status (2026-10-03)
+
+B2 execution is implemented in industry/mathtech-evidence.ts and the dedicated research exporters; see mathtech-shadow-readiness.md. The proposal below is retained as historical design context, not current implementation status. B3 real calibration remains EXTERNAL_BLOCKED.
+
+---
+
 # MathTech Evidence Layer v0.1 candidate
 
 CANDIDATE_ONLY；无数据库 migration，无 frozen contract，无 runtime integration。

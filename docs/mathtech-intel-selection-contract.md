@@ -1,3 +1,9 @@
+# Current implementation (2026-10-03)
+
+The four-way research-output adapter and optional existing SelectBench projection are executable. Real human-gold calibration is EXTERNAL_BLOCKED. Numeric precision/recall/support acceptance targets must be independently approved; none are inferred from synthetic fixtures. See mathtech-shadow-readiness.md for the current contract and trust boundary. The v0 candidate specification below is historical and its prior NOT_RUN statements are superseded by mathtech-checkpoint.json.
+
+---
+
 # MathTech Intel Selection Contract v0
 
 状态：prototype candidate；不是 frozen contract，也未经真实模型校准。
