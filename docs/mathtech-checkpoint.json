@@ -1,79 +1,56 @@
 {
-  "STATUS": "EXTERNAL_BLOCKED",
-  "START_HEAD": "067e8765b704a1d0af864f1b54b048e204477340",
-  "CODE_HEAD": "bdd2adfcb8e5390f0d32e1dd5c3b7be2e358f567",
-  "FINAL_HEAD": "Resolve current branch tip; later commits are documentation only",
-  "BRANCH": "prototype/mathtech-intel-v0",
-  "B1_POSTGRES_RUNTIME": "PASS (reused)",
-  "B2_EVIDENCE_GATE": "PASS",
-  "EVIDENCE_ADAPTER": "PASS (dedicated research output; upstream publication unchanged)",
-  "EVIDENCE_FIXTURES": "6 existing synthetic fixtures plus boundary mutations; fixtures unchanged",
-  "B3_CALIBRATION": "EXTERNAL_BLOCKED; code-side readiness PASS",
-  "CALIBRATION_DATASET": "No human-labelled public gold; 6 synthetic regression cases only",
-  "CALIBRATION_RUNTIME": "EXTERNAL_BLOCKED",
-  "PRECISION": null,
-  "RECALL": null,
+  "STATUS": "HUMAN_REVIEW_REQUIRED",
+  "START_HEAD": "9670f25273ae1441458dad3f70908a816c1252f3",
+  "FINAL_HEAD": "Resolve current branch tip; this commit records the pending review checkpoint",
+  "HUMAN_GOLD_TOTAL": 4,
+  "PUBLIC_CANDIDATES_TOTAL": 40,
+  "UNLABELLED_TOTAL": 36,
+  "EXPERIMENT_GOLD": 2,
+  "OBSERVE_GOLD": 2,
+  "IGNORE_GOLD": 0,
+  "NEEDS_EVIDENCE_GOLD": 0,
+  "CALIBRATION_MODEL": "deepseek-flash (Actions resolved configuration; not called)",
+  "CALIBRATION_CALLS": 0,
+  "CALIBRATION_ITERATIONS": 0,
+  "PAID_API_CALLS": 0,
+  "EXPERIMENT_PRECISION": null,
+  "EXPERIMENT_RECALL": null,
+  "NEEDS_EVIDENCE_RECALL": null,
+  "MACRO_F1": null,
+  "HARD_EVIDENCE_VIOLATIONS": null,
   "FALSE_POSITIVES": null,
   "FALSE_NEGATIVES": null,
-  "SELECTION_OUTPUTS": [
-    "EXPERIMENT",
-    "OBSERVE",
-    "IGNORE",
-    "NEEDS_EVIDENCE"
-  ],
-  "EXPERIMENT": "Implemented; regression PASS",
-  "OBSERVE": "Implemented; regression PASS",
-  "IGNORE": "Implemented; boundary regression PASS",
-  "NEEDS_EVIDENCE": "Implemented; regression PASS",
-  "SHADOW_RUN_READY": false,
+  "B1_POSTGRES_RUNTIME": "PASS",
+  "B2_EVIDENCE_GATE": "PASS",
+  "B3_CALIBRATION": "INSUFFICIENT_GOLD; NOT_RUN",
   "CORE_MODIFIED": false,
   "DB_SCHEMA_CHANGED": false,
   "MIGRATION_ADDED": false,
-  "PAID_API_CALLS": 0,
-  "MODEL_COST_OR_USAGE": "0 real model usage; local mock usage is not real calibration",
   "PRIVATE_DATA_USED": false,
-  "TESTS_RUN": [
-    "15 evidence/calibration projection boundary tests",
-    "4 transport budget tests",
-    "2 readiness tests",
-    "1 SelectBench adapter runtime and cache test",
-    "3 existing evaluator tests invalidated by script change",
-    "targeted typecheck"
-  ],
-  "TESTS_PASS": 25,
+  "TESTS_RUN": 0,
   "TESTS_FAIL": 0,
-  "ROOT_CAUSES_FIXED": [
-    "Unbound candidate evidence lacked runtime provenance and integrity checks",
-    "Research decisions had no mandatory four-way adapter",
-    "Existing SelectBench needed a four-way projection and safety metrics",
-    "Bounded evaluator needed request caps and unknown-outcome stop",
-    "Missing safety labels could be misreported as zero errors"
+  "TESTS_NOTE": "Prior 25 tests and 6 synthetic fixtures reused; no B1/B2/static audit/build/regression rerun. New data/workbook integrity checks passed; credential preflight failed because key is empty.",
+  "SHADOW_RUN_READY": false,
+  "ROOT_CAUSES_FIXED": [],
+  "PREPARED": [
+    "40 sourced public review rows; 4 restored human labels; 36 blank labels",
+    "User v0 thresholds recorded; old runtime controls unchanged pending reviewed gold",
+    "First pass up to 120 necessary calls +24 retry allowance; campaign <=250 attempts, <=3 iterations"
   ],
   "REMAINING_BLOCKERS": [
-    "One configured OpenAI-compatible LLM_BASE_URL / LLM_MODEL / LLM_API_KEY",
-    "Independent public human-labelled development/holdout corpus and source/applicability reviews",
-    "Approved per-class precision/recall/support targets and holdout acceptance"
+    "36 missing human labels and confirmation of source/context fields",
+    "CLASS_UNDERREPRESENTED: all four classes below requested minimum support",
+    "GitHub Actions LLM_API_KEY resolved empty; API authentication not tested"
   ],
-  "CI_RUNS": [
-    {
-      "sha": "4403046e26c71913e5f9800d2e8f771e4e5ac534",
-      "url": "https://github.com/pcsz3695/AIHOT/actions/runs/37102142758",
-      "result": "PASS",
-      "scope": "initial adapter and evaluator integration"
-    },
-    {
-      "sha": "61b6cba93918136fa03e133ce27965d180f90a6d",
-      "url": "https://github.com/pcsz3695/AIHOT/actions/runs/37102430643",
-      "result": "PASS",
-      "scope": "6 budget/readiness + 1 runtime + 3 existing evaluator; other checks carried forward"
-    },
-    {
-      "sha": "bdd2adfcb8e5390f0d32e1dd5c3b7be2e358f567",
-      "url": "https://github.com/pcsz3695/AIHOT/actions/runs/37102676796",
-      "result": "PASS",
-      "scope": "15 evidence + 1 runtime + 3 existing evaluator; budget/readiness carried forward"
-    }
-  ],
-  "FINAL_DECISION": "B2 PASS; B3 real calibration unavailable; readiness fails closed",
-  "NEXT_ACTION": "Provide the one provider configuration and independent human gold/acceptance inputs; resume bounded existing SelectBench calibration without rerunning B1."
+  "NEXT_ACTION": "Complete the consolidated review pack and configure the repository Actions secret; resume this checkpoint without B1/B2 revalidation.",
+  "PREFLIGHT": {
+    "run": "https://github.com/pcsz3695/AIHOT/actions/runs/37105933028",
+    "head": "d7df6366cb68e111d7c62b6a1205ab1c1e8ca670",
+    "secretPresent": false,
+    "model": "deepseek-flash",
+    "baseUrl": "https://api.deepseek.com/v1",
+    "apiCalls": 0,
+    "authenticationVerified": false,
+    "conclusion": "EXTERNAL_BLOCKED: repository Actions LLM_API_KEY resolved empty"
+  }
 }
